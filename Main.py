@@ -41,6 +41,7 @@ if st.session_state['user'] is None:
                 "chucVu": user.iloc[0]["chucVu"]
             }
             st.success("Logged in successfully")
+            st.experimental_rerun()  # Force a rerun to display logged-in content
         else:
             st.error("Invalid username or password")
 else:
