@@ -13,40 +13,46 @@ def check_login(username, password):
                        (nhanvien_df['matKhau'].astype(str) == str(password))]
     return user if not user.empty else None
 
-
-
 # User session
 if 'user' not in st.session_state:
     st.session_state['user'] = None
 
 # Login section
-if not st.session_state['user']:
+if st.session_state['user'] is None:
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
     if st.button("Login"):
         user = check_login(username, password)
         if user is not None:
-            st.session_state['user'] = user
+            # Store only essential information in session state, not the entire DataFrame
+            st.session_state['user'] = {
+                "maNVYT": user.iloc[0]["maNVYT"],
+                "tenNhanVien": user.iloc[0]["tenNhanVien"],
+                "chucVu": user.iloc[0]["chucVu"]
+            }
             st.success("Logged in successfully")
         else:
             st.error("Invalid username or password")
 else:
-    user_info = st.session_state['user'].iloc[0]
+    user_info = st.session_state['user']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
     # Select and Register Target
     st.title("Choose a Target and Register")
     target = st.selectbox("Select a Target", kpitarget_df['Target'].tolist())
     max_reg = kpitarget_df[kpitarget_df['Target'] == target]['MaxReg'].values[0]
-    if st.button("Register"):
-        # Check current registration count
-        if registration_file in st.session_state:
-            registration_df = st.session_state[registration_file]
-        else:
-            registration_df = pd.read_excel(registration_file) if registration_file else pd.DataFrame()
 
+    if st.button("Register"):
+        # Load or create the registration file
+        try:
+            registration_df = pd.read_excel(registration_file)
+        except FileNotFoundError:
+            registration_df = pd.DataFrame(columns=["maNVYT", "tenNhanVien", "Target", "TimeStamp"])
+
+        # Check current registration count
         target_count = registration_df[registration_df['Target'] == target].shape[0]
+        
         if target_count < max_reg:
             # Register user
             new_registration = {
@@ -64,9 +70,13 @@ else:
     # Admin view
     if user_info['chucVu'] == 'admin':
         st.title("Admin: Registration List")
-        st.write(registration_df)
-        st.download_button(
-            label="Download Registration List",
-            data=registration_df.to_csv(index=False),
-            file_name='Registration.csv'
-        )
+        try:
+            registration_df = pd.read_excel(registration_file)
+            st.write(registration_df)
+            st.download_button(
+                label="Download Registration List",
+                data=registration_df.to_csv(index=False),
+                file_name='Registration.csv'
+            )
+        except FileNotFoundError:
+            st.write("No registrations found.")
