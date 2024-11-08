@@ -14,6 +14,9 @@ KPI_SHEET_RANGE = 'Sheet1'  # Replace with your sheet name
 REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'  # ID for Registration Google Sheet
 REGISTRATION_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
 
+NHANVIEN_SHEET_ID = '1kzfwjA0nVLFoW8T5jroLyR2lmtdZp8eaYH-_Pyb0nbk'  # ID for NhanVien Google Sheet
+NHANVIEN_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
+
 # Load Google credentials from Streamlit Secrets
 google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
 credentials_info = json.loads(google_credentials)
@@ -59,10 +62,11 @@ def append_to_sheet(sheet_id, range_name, values):
 
 # Load Google Sheets data into Streamlit session state
 if 'nhanvien_df' not in st.session_state:
-    st.session_state['nhanvien_df'] = pd.read_excel('NhanVien.xlsx')
+    # Load NhanVien data from Google Sheets
+    st.session_state['nhanvien_df'] = fetch_sheet_data(NHANVIEN_SHEET_ID, NHANVIEN_SHEET_RANGE)
 
 if 'kpitarget_df' not in st.session_state:
-    # Load from Google Sheets instead of local file
+    # Load KPITarget data from Google Sheets
     st.session_state['kpitarget_df'] = fetch_sheet_data(KPI_SHEET_ID, KPI_SHEET_RANGE)
 
 if 'registration_df' not in st.session_state:
