@@ -167,10 +167,10 @@ if st.session_state['is_logged_in']:
 
             # Append to Google Sheets
             try:
-            append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
-            
-            # Update session state registration DataFrame
-            st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
-            st.success("Đăng ký thành công!")
+                append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
+                
+                # Update session state registration DataFrame
+                st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+                st.success("Đăng ký thành công!")
             except Exception as e:
-            st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+                st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
