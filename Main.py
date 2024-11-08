@@ -41,7 +41,6 @@ if st.session_state['user'] is None:
                 "chucVu": user.iloc[0]["chucVu"]
             }
             st.success("Logged in successfully")
-            st.experimental_rerun()  # Force a rerun to display logged-in content
         else:
             st.error("Invalid username or password")
 else:
@@ -79,10 +78,12 @@ else:
     # Extract the selected targets' names (without remaining slots info)
     selected_targets = [target.split(" (")[0] for target in targets_to_register]
 
-    # Register button with confirmation
-    if st.button("Register") and selected_targets:
-        confirm = st.warning("Are you sure you want to register for these targets?", icon="⚠️")
-        if st.button("Yes, Register"):
+    # Confirmation dialog before registration
+    if selected_targets:
+        st.write("Are you sure you want to register for the selected targets?")
+        confirmation = st.radio("Confirmation", ("No", "Yes"))
+        
+        if confirmation == "Yes":
             # Create new registration entries
             new_registrations = []
             for target in selected_targets:
@@ -98,8 +99,10 @@ else:
             st.session_state['registration_df'] = registration_df  # Update session state
             registration_df.to_excel('Registration.xlsx', index=False)
             st.success("Registration successful!")
-        else:
-            st.warning("Registration canceled.")
+
+            # Clear the selection and confirmation after registration
+            st.session_state.pop("confirmation", None)
+            st.session_state.pop("targets_to_register", None)
 
     # Admin view
     if user_info['chucVu'] == 'admin':
