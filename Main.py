@@ -127,6 +127,19 @@ if st.session_state['is_logged_in']:
         st.title("Admin: Danh sách chỉ tiêu đăng ký")
         st.write(registration_df)
 
+        # Allow admin to upload a new KPItarget file
+        uploaded_file = st.file_uploader("Upload a new KPItarget file", type=["xlsx"])
+        if uploaded_file:
+    # Load the new file into kpitarget_df
+    st.session_state['kpitarget_df'] = pd.read_excel(uploaded_file)
+    
+    # Save the uploaded file to the local filesystem
+    with open("KPItarget.xlsx", "wb") as f:
+        f.write(uploaded_file.getbuffer())
+    
+    st.success("KPItarget file uploaded and saved successfully!")
+
+            
         # Create a BytesIO object to store the Excel file in memory
         excel_data = io.BytesIO()
         registration_df.to_excel(excel_data, index=False, engine='openpyxl')
