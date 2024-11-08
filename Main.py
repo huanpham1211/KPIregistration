@@ -9,8 +9,11 @@ registration_file = 'Registration.xlsx'
 
 # Helper function to check login
 def check_login(username, password):
+    print("Entered Username:", username)
+    print("Entered Password:", password)
     user = nhanvien_df[(nhanvien_df['taiKhoan'] == username) & (nhanvien_df['matKhau'] == password)]
     return user if not user.empty else None
+
 
 # User session
 if 'user' not in st.session_state:
