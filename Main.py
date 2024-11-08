@@ -26,6 +26,10 @@ def check_login(username, password):
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
+# Initialize registration confirmation flag
+if 'registration_confirmed' not in st.session_state:
+    st.session_state['registration_confirmed'] = False
+
 # Login section
 if not st.session_state['is_logged_in']:
     st.title("Login")
@@ -111,18 +115,6 @@ if st.session_state['is_logged_in']:
             registration_df = pd.concat([registration_df, pd.DataFrame(new_registrations)], ignore_index=True)
             st.session_state['registration_df'] = registration_df  # Update session state
             registration_df.to_excel('Registration.xlsx', index=False)
-            st.success("Registration successful!")
+            st.session_state['registration_confirmed'] = True  # Set confirmation flag to refresh content
 
-            # Refresh the registration list for the user after successful registration
-            st.session_state['user_registrations'] = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
-            st.experimental_rerun()  # Refresh page to update the target list
-
-    # Admin view
-    if user_info['chucVu'] == 'admin':
-        st.title("Admin: Registration List")
-        st.write(registration_df)
-        st.download_button(
-            label="Download Registration List",
-            data=registration_df.to_csv(index=False),
-            file_name='Registration.csv'
-        )
+    # Refresh content after registration
