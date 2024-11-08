@@ -59,7 +59,7 @@ if st.session_state['is_logged_in']:
     registration_df = st.session_state['registration_df']
     user_registrations = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
     
-    st.write("Your Registered Targets:")
+    st.write("Chỉ tiêu đã đăng ký:")
     if not user_registrations.empty:
         st.write(user_registrations[['Target', 'TimeStamp']])
     else:
@@ -89,7 +89,7 @@ if st.session_state['is_logged_in']:
     ]
     
     targets_to_register = st.multiselect(
-        "Chọn chỉ tiêu (remaining slots shown in parentheses):",
+        "Chọn chỉ tiêu (Số vị trí còn lại):",
         available_targets
     )
 
