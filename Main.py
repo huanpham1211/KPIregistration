@@ -47,38 +47,62 @@ else:
     user_info = st.session_state['user']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
+    # Display registered targets for the current user
+    registration_df = st.session_state['registration_df']
+    user_registrations = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
+    if not user_registrations.empty:
+        st.write("Your Registered Targets:")
+        st.write(user_registrations[['Target', 'TimeStamp']])
+    else:
+        st.write("You have not registered for any targets.")
+
     # Select and Register Target
-    st.title("Choose a Target and Register")
+    st.title("Choose Targets and Register")
     kpitarget_df = st.session_state['kpitarget_df']
-    target = st.selectbox("Select a Target", kpitarget_df['Target'].tolist())
-    max_reg = kpitarget_df[kpitarget_df['Target'] == target]['MaxReg'].values[0]
 
-    if st.button("Register"):
-        # Load registration DataFrame from session state
-        registration_df = st.session_state['registration_df']
+    # Calculate remaining registration slots for each target
+    target_slots = {}
+    for _, row in kpitarget_df.iterrows():
+        target = row['Target']
+        max_reg = row['MaxReg']
+        registered_count = registration_df[registration_df['Target'] == target].shape[0]
+        remaining_slots = max_reg - registered_count
+        target_slots[target] = remaining_slots
 
-        # Check current registration count
-        target_count = registration_df[registration_df['Target'] == target].shape[0]
-        
-        if target_count < max_reg:
-            # Register user
-            new_registration = {
-                'maNVYT': user_info['maNVYT'],
-                'tenNhanVien': user_info['tenNhanVien'],
-                'Target': target,
-                'TimeStamp': datetime.now()
-            }
-            registration_df = registration_df.append(new_registration, ignore_index=True)
+    # Show remaining slots and allow multiple selection
+    targets_to_register = st.multiselect(
+        "Select Targets (remaining slots shown in parentheses):",
+        [f"{target} ({remaining_slots} left)" for target, remaining_slots in target_slots.items() if remaining_slots > 0]
+    )
+
+    # Extract the selected targets' names (without remaining slots info)
+    selected_targets = [target.split(" (")[0] for target in targets_to_register]
+
+    # Register button with confirmation
+    if st.button("Register") and selected_targets:
+        confirm = st.warning("Are you sure you want to register for these targets?", icon="⚠️")
+        if st.button("Yes, Register"):
+            # Create new registration entries
+            new_registrations = []
+            for target in selected_targets:
+                new_registrations.append({
+                    'maNVYT': user_info['maNVYT'],
+                    'tenNhanVien': user_info['tenNhanVien'],
+                    'Target': target,
+                    'TimeStamp': datetime.now()
+                })
+
+            # Append new entries to the DataFrame
+            registration_df = pd.concat([registration_df, pd.DataFrame(new_registrations)], ignore_index=True)
             st.session_state['registration_df'] = registration_df  # Update session state
             registration_df.to_excel('Registration.xlsx', index=False)
             st.success("Registration successful!")
         else:
-            st.warning("Registration limit reached for this target.")
+            st.warning("Registration canceled.")
 
     # Admin view
     if user_info['chucVu'] == 'admin':
         st.title("Admin: Registration List")
-        registration_df = st.session_state['registration_df']
         st.write(registration_df)
         st.download_button(
             label="Download Registration List",
