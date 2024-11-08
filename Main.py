@@ -3,12 +3,16 @@ import pandas as pd
 from datetime import datetime
 import io
 import json
+import pytz
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Google Sheets document ID and range
-SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # New spreadsheet ID
-SHEET_RANGE = 'Sheet1'  # Replace with your sheet name if it's different
+# Google Sheets document IDs and ranges
+KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # ID for KPITarget Google Sheet
+KPI_SHEET_RANGE = 'Sheet1'  # Replace with your sheet name
+
+REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'  # ID for Registration Google Sheet
+REGISTRATION_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
 
 # Load Google credentials from Streamlit Secrets
 google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
@@ -17,13 +21,13 @@ credentials_info = json.loads(google_credentials)
 # Authenticate using the service account credentials
 credentials = service_account.Credentials.from_service_account_info(
     credentials_info,
-    scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+    scopes=["https://www.googleapis.com/auth/spreadsheets"]
 )
 
 # Initialize the Google Sheets API client
 sheets_service = build('sheets', 'v4', credentials=credentials)
 
-# Function to fetch data from Google Sheets
+# Function to fetch data from a Google Sheet
 def fetch_sheet_data(sheet_id, range_name):
     result = sheets_service.spreadsheets().values().get(
         spreadsheetId=sheet_id,
@@ -34,12 +38,24 @@ def fetch_sheet_data(sheet_id, range_name):
     # Convert to DataFrame
     if not values:
         st.error("No data found.")
-        return pd.DataFrame()  # Return empty DataFrame if no data
+        return pd.DataFrame()
     else:
-        # Convert list of lists to DataFrame
-        headers = values[0]  # Use the first row as headers
+        headers = values[0]  # First row as headers
         data = values[1:]  # Data starts from the second row
         return pd.DataFrame(data, columns=headers)
+
+# Function to append data to a Google Sheet
+def append_to_sheet(sheet_id, range_name, values):
+    body = {
+        'values': values
+    }
+    sheets_service.spreadsheets().values().append(
+        spreadsheetId=sheet_id,
+        range=range_name,
+        valueInputOption="USER_ENTERED",
+        insertDataOption="INSERT_ROWS",
+        body=body
+    ).execute()
 
 # Load Google Sheets data into Streamlit session state
 if 'nhanvien_df' not in st.session_state:
@@ -47,13 +63,11 @@ if 'nhanvien_df' not in st.session_state:
 
 if 'kpitarget_df' not in st.session_state:
     # Load from Google Sheets instead of local file
-    st.session_state['kpitarget_df'] = fetch_sheet_data(SHEET_ID, SHEET_RANGE)
+    st.session_state['kpitarget_df'] = fetch_sheet_data(KPI_SHEET_ID, KPI_SHEET_RANGE)
 
 if 'registration_df' not in st.session_state:
-    try:
-        st.session_state['registration_df'] = pd.read_excel('Registration.xlsx')
-    except FileNotFoundError:
-        st.session_state['registration_df'] = pd.DataFrame(columns=["maNVYT", "tenNhanVien", "Target", "TimeStamp"])
+    # Load registration data from Google Sheets
+    st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
 
 # Helper function to check login
 def check_login(username, password):
@@ -141,40 +155,19 @@ if st.session_state['is_logged_in']:
         confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn?", ("Không", "Có"))
         
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
-            # Create new registration entries
-            new_registrations = []
-            for target in selected_targets:
-                new_registrations.append({
-                    'maNVYT': user_info['maNVYT'],
-                    'tenNhanVien': user_info['tenNhanVien'],
-                    'Target': target,
-                    'TimeStamp': datetime.now()
-                })
+            # Get Vietnam timezone-aware timestamp
+            vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+            timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
 
-            # Append new entries to the DataFrame
-            registration_df = pd.concat([registration_df, pd.DataFrame(new_registrations)], ignore_index=True)
-            st.session_state['registration_df'] = registration_df  # Update session state
-            registration_df.to_excel('Registration.xlsx', index=False)
-            st.session_state['registration_confirmed'] = True  # Set confirmation flag to refresh content
+            # Prepare new registration entries
+            new_registrations = [
+                [user_info['maNVYT'], user_info['tenNhanVien'], target, timestamp]
+                for target in selected_targets
+            ]
 
-    # Refresh content after registration
-    if st.session_state['registration_confirmed']:
-        st.session_state['registration_confirmed'] = False  # Reset confirmation flag
-
-    # Admin view
-    if user_info['chucVu'] == 'admin':
-        st.title("Admin: Danh sách chỉ tiêu đăng ký")
-        st.write(registration_df)
-          
-        # Create a BytesIO object to store the Excel file in memory
-        excel_data = io.BytesIO()
-        registration_df.to_excel(excel_data, index=False, engine='openpyxl')
-        excel_data.seek(0)  # Rewind the buffer
-
-        # Use st.download_button to allow downloading the Excel file
-        st.download_button(
-            label="Download Registration List",
-            data=excel_data,
-            file_name='Registration.xlsx',
-            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        )
+            # Append to Google Sheets
+            append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
+            
+            # Update session state registration DataFrame
+            st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+            st.success("Đăng ký thành công!")
