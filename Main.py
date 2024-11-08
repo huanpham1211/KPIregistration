@@ -32,9 +32,9 @@ if 'registration_confirmed' not in st.session_state:
 
 # Show the login section only if the user is not logged in
 if not st.session_state['is_logged_in']:
-    st.title("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    st.title("Đăng nhập")
+    username = st.text_input("Tài khoản")
+    password = st.text_input("Mật khẩu", type="password")
     
     if st.button("Login"):
         user = check_login(username, password)
@@ -46,9 +46,9 @@ if not st.session_state['is_logged_in']:
                 "chucVu": user.iloc[0]["chucVu"]
             }
             st.session_state['is_logged_in'] = True
-            st.success("Logged in successfully")
+            st.success("Đăng nhập thành công")
         else:
-            st.error("Invalid username or password")
+            st.error("Sai tên tài khoản hoặc mật khẩu")
 
 # Only display the main content if the user is logged in
 if st.session_state['is_logged_in']:
@@ -63,13 +63,13 @@ if st.session_state['is_logged_in']:
     if not user_registrations.empty:
         st.write(user_registrations[['Target', 'TimeStamp']])
     else:
-        st.write("You have not registered for any targets.")
+        st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
     # Get a list of targets the user has already registered
     registered_targets = user_registrations['Target'].tolist()
 
     # Select and Register Target
-    st.title("Choose Targets and Register")
+    st.title("Chọn chỉ tiêu và đăng ký")
     kpitarget_df = st.session_state['kpitarget_df']
 
     # Calculate remaining registration slots for each target
@@ -83,13 +83,13 @@ if st.session_state['is_logged_in']:
 
     # Show remaining slots and allow multiple selection, but disable registered targets
     available_targets = [
-        f"{target} ({remaining_slots} left)" 
+        f"{target} ({remaining_slots} vị trí trống còn lại)" 
         for target, remaining_slots in target_slots.items() 
         if remaining_slots > 0 and target not in registered_targets
     ]
     
     targets_to_register = st.multiselect(
-        "Select Targets (remaining slots shown in parentheses):",
+        "Chọn chỉ tiêu (remaining slots shown in parentheses):",
         available_targets
     )
 
@@ -98,9 +98,9 @@ if st.session_state['is_logged_in']:
 
     # Confirmation dialog before registration
     if selected_targets:
-        confirmation = st.radio("Are you sure you want to register for the selected targets?", ("No", "Yes"))
+        confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn?", ("Không", "Có"))
         
-        if confirmation == "Yes" and st.button("Confirm Registration"):
+        if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Create new registration entries
             new_registrations = []
             for target in selected_targets:
@@ -123,10 +123,10 @@ if st.session_state['is_logged_in']:
 
     # Admin view
     if user_info['chucVu'] == 'admin':
-        st.title("Admin: Registration List")
+        st.title("Admin: Danh sách chỉ tiêu đăng ký")
         st.write(registration_df)
         st.download_button(
             label="Download Registration List",
-            data=registration_df.to_csv(index=False),
-            file_name='Registration.csv'
+            data=registration_df.to_xlsx(index=False),
+            file_name='Registration.xlsx'
         )
