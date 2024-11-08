@@ -43,11 +43,11 @@ if not st.session_state['is_logged_in']:
             }
             st.session_state['is_logged_in'] = True
             st.success("Logged in successfully")
-            st.experimental_rerun()  # Rerun the script to load the post-login content
         else:
             st.error("Invalid username or password")
-else:
-    # Display content after login
+
+# Only display the main content if the user is logged in
+if st.session_state['is_logged_in']:
     user_info = st.session_state['user_info']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
@@ -105,7 +105,8 @@ else:
             st.success("Registration successful!")
 
             # Clear selections and reset confirmation dialog
-            st.experimental_rerun()
+            st.session_state['confirmation'] = None
+            st.session_state['targets_to_register'] = None
 
     # Admin view
     if user_info['chucVu'] == 'admin':
