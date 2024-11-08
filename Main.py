@@ -161,7 +161,12 @@ if st.session_state['is_logged_in']:
 
             # Prepare new registration entries
             new_registrations = [
-                [user_info['maNVYT'], user_info['tenNhanVien'], target, timestamp]
+                [
+                    int(user_info['maNVYT']),  # Ensure maNVYT is a standard Python int
+                    user_info['tenNhanVien'],
+                    target,
+                    timestamp
+                ]
                 for target in selected_targets
             ]
 
