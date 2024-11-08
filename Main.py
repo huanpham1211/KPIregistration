@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import io
 
 # Load data only once into session state
 if 'nhanvien_df' not in st.session_state:
@@ -125,8 +126,16 @@ if st.session_state['is_logged_in']:
     if user_info['chucVu'] == 'admin':
         st.title("Admin: Danh sách chỉ tiêu đăng ký")
         st.write(registration_df)
+
+        # Create a BytesIO object to store the Excel file in memory
+        excel_data = io.BytesIO()
+        registration_df.to_excel(excel_data, index=False, engine='openpyxl')
+        excel_data.seek(0)  # Rewind the buffer
+
+        # Use st.download_button to allow downloading the Excel file
         st.download_button(
             label="Download Registration List",
-            data=registration_df.to_xlsx(index=False),
-            file_name='Registration.xlsx'
+            data=excel_data,
+            file_name='Registration.xlsx',
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         )
