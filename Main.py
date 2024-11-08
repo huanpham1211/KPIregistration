@@ -2,13 +2,54 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
 
-# Load data only once into session state
+# Google Sheets document ID (from your shared link)
+SHEET_ID = '1Rh5R5Mgj13q-4VbzRa04dB4MpUn5qBlF'
+
+# Google Sheets range to read from (e.g., "Sheet1!A1:D")
+SHEET_RANGE = 'Sheet1'  # Change this if your sheet name is different
+
+# Load Google credentials from Streamlit Secrets
+google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
+credentials_info = json.loads(google_credentials)
+
+# Authenticate using the service account credentials
+credentials = service_account.Credentials.from_service_account_info(
+    credentials_info,
+    scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
+)
+
+# Initialize the Google Sheets API client
+sheets_service = build('sheets', 'v4', credentials=credentials)
+
+# Function to fetch data from Google Sheets
+def fetch_sheet_data(sheet_id, range_name):
+    result = sheets_service.spreadsheets().values().get(
+        spreadsheetId=sheet_id,
+        range=range_name
+    ).execute()
+    values = result.get('values', [])
+    
+    # Convert to DataFrame
+    if not values:
+        st.error("No data found.")
+        return pd.DataFrame()  # Return empty DataFrame if no data
+    else:
+        # Convert list of lists to DataFrame
+        headers = values[0]  # Use the first row as headers
+        data = values[1:]  # Data starts from the second row
+        return pd.DataFrame(data, columns=headers)
+
+# Load Google Sheets data into Streamlit session state
 if 'nhanvien_df' not in st.session_state:
     st.session_state['nhanvien_df'] = pd.read_excel('NhanVien.xlsx')
 
 if 'kpitarget_df' not in st.session_state:
-    st.session_state['kpitarget_df'] = pd.read_excel('KPItarget.xlsx')
+    # Load from Google Sheets instead of local file
+    st.session_state['kpitarget_df'] = fetch_sheet_data(SHEET_ID, SHEET_RANGE)
 
 if 'registration_df' not in st.session_state:
     try:
@@ -77,7 +118,7 @@ if st.session_state['is_logged_in']:
     target_slots = {}
     for _, row in kpitarget_df.iterrows():
         target = row['Target']
-        max_reg = row['MaxReg']
+        max_reg = int(row['MaxReg'])
         registered_count = registration_df[registration_df['Target'] == target].shape[0]
         remaining_slots = max_reg - registered_count
         target_slots[target] = remaining_slots
