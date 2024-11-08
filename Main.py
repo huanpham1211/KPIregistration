@@ -22,36 +22,41 @@ def check_login(username, password):
                        (nhanvien_df['matKhau'].astype(str) == str(password))]
     return user if not user.empty else None
 
-# User session
-if 'user' not in st.session_state:
-    st.session_state['user'] = None
+# Initialize user login status in session state
+if 'is_logged_in' not in st.session_state:
+    st.session_state['is_logged_in'] = False
 
 # Login section
-if st.session_state['user'] is None:
+if not st.session_state['is_logged_in']:
     st.title("Login")
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+    
     if st.button("Login"):
         user = check_login(username, password)
         if user is not None:
-            # Store only essential information in session state
-            st.session_state['user'] = {
+            # Set user details in session state and login status
+            st.session_state['user_info'] = {
                 "maNVYT": user.iloc[0]["maNVYT"],
                 "tenNhanVien": user.iloc[0]["tenNhanVien"],
                 "chucVu": user.iloc[0]["chucVu"]
             }
+            st.session_state['is_logged_in'] = True
             st.success("Logged in successfully")
+            st.experimental_rerun()  # Rerun the script to load the post-login content
         else:
             st.error("Invalid username or password")
 else:
-    user_info = st.session_state['user']
+    # Display content after login
+    user_info = st.session_state['user_info']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
     # Display registered targets for the current user
     registration_df = st.session_state['registration_df']
     user_registrations = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
+    
+    st.write("Your Registered Targets:")
     if not user_registrations.empty:
-        st.write("Your Registered Targets:")
         st.write(user_registrations[['Target', 'TimeStamp']])
     else:
         st.write("You have not registered for any targets.")
@@ -80,10 +85,9 @@ else:
 
     # Confirmation dialog before registration
     if selected_targets:
-        st.write("Are you sure you want to register for the selected targets?")
-        confirmation = st.radio("Confirmation", ("No", "Yes"))
+        confirmation = st.radio("Are you sure you want to register for the selected targets?", ("No", "Yes"))
         
-        if confirmation == "Yes":
+        if confirmation == "Yes" and st.button("Confirm Registration"):
             # Create new registration entries
             new_registrations = []
             for target in selected_targets:
@@ -100,9 +104,8 @@ else:
             registration_df.to_excel('Registration.xlsx', index=False)
             st.success("Registration successful!")
 
-            # Clear the selection and confirmation after registration
-            st.session_state.pop("confirmation", None)
-            st.session_state.pop("targets_to_register", None)
+            # Clear selections and reset confirmation dialog
+            st.experimental_rerun()
 
     # Admin view
     if user_info['chucVu'] == 'admin':
