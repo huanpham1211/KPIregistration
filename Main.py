@@ -30,7 +30,7 @@ if 'is_logged_in' not in st.session_state:
 if 'registration_confirmed' not in st.session_state:
     st.session_state['registration_confirmed'] = False
 
-# Login section
+# Show the login section only if the user is not logged in
 if not st.session_state['is_logged_in']:
     st.title("Login")
     username = st.text_input("Username")
@@ -118,3 +118,15 @@ if st.session_state['is_logged_in']:
             st.session_state['registration_confirmed'] = True  # Set confirmation flag to refresh content
 
     # Refresh content after registration
+    if st.session_state['registration_confirmed']:
+        st.session_state['registration_confirmed'] = False  # Reset confirmation flag
+
+    # Admin view
+    if user_info['chucVu'] == 'admin':
+        st.title("Admin: Registration List")
+        st.write(registration_df)
+        st.download_button(
+            label="Download Registration List",
+            data=registration_df.to_csv(index=False),
+            file_name='Registration.csv'
+        )
