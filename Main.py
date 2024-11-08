@@ -54,7 +54,6 @@ def fetch_sheet_data(sheet_id, range_name):
 # Use the fetch function to load data into the app
 kpitarget_df = fetch_sheet_data(SHEET_ID, SHEET_RANGE)
 st.write(kpitarget_df)  # Display the data in the app
-'
 
 # Google Sheets range to read from (e.g., "Sheet1!A1:D")
 SHEET_RANGE = 'Sheet1'  # Change this if your sheet name is different
