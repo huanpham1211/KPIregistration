@@ -61,6 +61,9 @@ if st.session_state['is_logged_in']:
     else:
         st.write("You have not registered for any targets.")
 
+    # Get a list of targets the user has already registered
+    registered_targets = user_registrations['Target'].tolist()
+
     # Select and Register Target
     st.title("Choose Targets and Register")
     kpitarget_df = st.session_state['kpitarget_df']
@@ -74,10 +77,16 @@ if st.session_state['is_logged_in']:
         remaining_slots = max_reg - registered_count
         target_slots[target] = remaining_slots
 
-    # Show remaining slots and allow multiple selection
+    # Show remaining slots and allow multiple selection, but disable registered targets
+    available_targets = [
+        f"{target} ({remaining_slots} left)" 
+        for target, remaining_slots in target_slots.items() 
+        if remaining_slots > 0 and target not in registered_targets
+    ]
+    
     targets_to_register = st.multiselect(
         "Select Targets (remaining slots shown in parentheses):",
-        [f"{target} ({remaining_slots} left)" for target, remaining_slots in target_slots.items() if remaining_slots > 0]
+        available_targets
     )
 
     # Extract the selected targets' names (without remaining slots info)
@@ -104,9 +113,9 @@ if st.session_state['is_logged_in']:
             registration_df.to_excel('Registration.xlsx', index=False)
             st.success("Registration successful!")
 
-            # Clear selections and reset confirmation dialog
-            st.session_state['confirmation'] = None
-            st.session_state['targets_to_register'] = None
+            # Refresh the registration list for the user after successful registration
+            st.session_state['user_registrations'] = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
+            st.experimental_rerun()  # Refresh page to update the target list
 
     # Admin view
     if user_info['chucVu'] == 'admin':
