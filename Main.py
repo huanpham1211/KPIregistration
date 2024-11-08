@@ -6,57 +6,9 @@ import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
-# Google Sheets document ID (from your shared link)
+# Google Sheets document ID and range
 SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # New spreadsheet ID
 SHEET_RANGE = 'Sheet1'  # Replace with your sheet name if it's different
-
-# Function to fetch data from Google Sheets
-def fetch_sheet_data(sheet_id, range_name):
-    result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=sheet_id,
-        range=range_name
-    ).execute()
-    values = result.get('values', [])
-    
-    # Convert to DataFrame
-    if not values:
-        st.error("No data found.")
-        return pd.DataFrame()  # Return empty DataFrame if no data
-    else:
-        # Convert list of lists to DataFrame
-        headers = values[0]  # Use the first row as headers
-        data = values[1:]  # Data starts from the second row
-        return pd.DataFrame(data, columns=headers)
-
-# Use the fetch function to load data into the app
-kpitarget_df = fetch_sheet_data(SHEET_ID, SHEET_RANGE)
-st.write(kpitarget_df)  # Display the data in the app
-SHEET_RANGE = 'Sheet1'  # Replace with your sheet name if it's different
-
-# Function to fetch data from Google Sheets
-def fetch_sheet_data(sheet_id, range_name):
-    result = sheets_service.spreadsheets().values().get(
-        spreadsheetId=sheet_id,
-        range=range_name
-    ).execute()
-    values = result.get('values', [])
-    
-    # Convert to DataFrame
-    if not values:
-        st.error("No data found.")
-        return pd.DataFrame()  # Return empty DataFrame if no data
-    else:
-        # Convert list of lists to DataFrame
-        headers = values[0]  # Use the first row as headers
-        data = values[1:]  # Data starts from the second row
-        return pd.DataFrame(data, columns=headers)
-
-# Use the fetch function to load data into the app
-kpitarget_df = fetch_sheet_data(SHEET_ID, SHEET_RANGE)
-st.write(kpitarget_df)  # Display the data in the app
-
-# Google Sheets range to read from (e.g., "Sheet1!A1:D")
-SHEET_RANGE = 'Sheet1'  # Change this if your sheet name is different
 
 # Load Google credentials from Streamlit Secrets
 google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
