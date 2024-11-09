@@ -74,11 +74,24 @@ def check_login(username, password):
                        (nhanvien_df['matKhau'].astype(str) == str(password))]
     return user if not user.empty else None
 
+# Function to display the user's registered targets
+def display_user_registrations():
+    # Refresh the registration list from Google Sheets after each registration
+    st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+    registration_df = st.session_state['registration_df']
+    user_registrations = registration_df[registration_df['maNVYT'] == str(st.session_state['user_info']['maNVYT'])]
+
+    st.write("Chỉ tiêu đã đăng ký:")
+    if not user_registrations.empty:
+        st.write(user_registrations[['Target', 'TimeStamp']])
+    else:
+        st.write("Bạn chưa đăng ký chỉ tiêu nào!")
+
 # Initialize user login status in session state
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
-# Display the login section only if the user is not logged in
+# Show the login section only if the user is not logged in
 if not st.session_state['is_logged_in']:
     st.title("Đăng nhập")
     username = st.text_input("Tài khoản")
@@ -98,26 +111,17 @@ if not st.session_state['is_logged_in']:
             st.error("Sai tên tài khoản hoặc mật khẩu")
 
 # Only display the main content if the user is logged in
-if st.session_state['is_logged_in']:
+if st.session_state.get('is_logged_in', False):
     user_info = st.session_state['user_info']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
-    # Display registered targets for the current user
-    registration_df = st.session_state['registration_df']
-    user_registrations = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
-    
-    st.write("Chỉ tiêu đã đăng ký:")
-    if not user_registrations.empty:
-        st.write(user_registrations[['Target', 'TimeStamp']])
-    else:
-        st.write("Bạn chưa đăng ký chỉ tiêu nào!")
-
-    # Get a list of targets the user has already registered
-    registered_targets = user_registrations['Target'].tolist()
+    # Display the user's registered targets
+    display_user_registrations()
 
     # Select and Register Target
     st.title("Chọn chỉ tiêu và đăng ký")
     kpitarget_df = st.session_state['kpitarget_df']
+    registration_df = st.session_state['registration_df']
 
     # Calculate remaining registration slots for each target
     target_slots = {}
@@ -129,6 +133,7 @@ if st.session_state['is_logged_in']:
         target_slots[target] = remaining_slots
 
     # Show remaining slots and allow multiple selection, but disable registered targets
+    registered_targets = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]['Target'].tolist()
     available_targets = [
         f"{target} ({remaining_slots} vị trí trống còn lại)" 
         for target, remaining_slots in target_slots.items() 
@@ -167,8 +172,11 @@ if st.session_state['is_logged_in']:
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
                 
-                # Update session state registration DataFrame
-                st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+                # Display success message
                 st.success("Đăng ký thành công!")
+                
+                # Refresh the displayed registered targets for the user
+                display_user_registrations()
+                
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
