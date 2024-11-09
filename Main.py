@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
+import io
 import json
 import pytz
 from google.oauth2 import service_account
@@ -8,13 +9,13 @@ from googleapiclient.discovery import build
 
 # Google Sheets document IDs and ranges
 KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # ID for KPITarget Google Sheet
-KPI_SHEET_RANGE = 'Sheet1'
+KPI_SHEET_RANGE = 'Sheet1'  # Replace with your sheet name
 
 REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'  # ID for Registration Google Sheet
-REGISTRATION_SHEET_RANGE = 'Sheet1'
+REGISTRATION_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
 
 NHANVIEN_SHEET_ID = '1kzfwjA0nVLFoW8T5jroLyR2lmtdZp8eaYH-_Pyb0nbk'  # ID for NhanVien Google Sheet
-NHANVIEN_SHEET_RANGE = 'Sheet1'
+NHANVIEN_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
 
 # Load Google credentials from Streamlit Secrets
 google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
@@ -61,12 +62,15 @@ def append_to_sheet(sheet_id, range_name, values):
 
 # Load Google Sheets data into Streamlit session state
 if 'nhanvien_df' not in st.session_state:
+    # Load NhanVien data from Google Sheets
     st.session_state['nhanvien_df'] = fetch_sheet_data(NHANVIEN_SHEET_ID, NHANVIEN_SHEET_RANGE)
 
 if 'kpitarget_df' not in st.session_state:
+    # Load KPITarget data from Google Sheets
     st.session_state['kpitarget_df'] = fetch_sheet_data(KPI_SHEET_ID, KPI_SHEET_RANGE)
 
 if 'registration_df' not in st.session_state:
+    # Load registration data from Google Sheets
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
 
 # Helper function to check login
@@ -79,6 +83,10 @@ def check_login(username, password):
 # Initialize user login status in session state
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
+
+# Initialize registration confirmation flag
+if 'registration_confirmed' not in st.session_state:
+    st.session_state['registration_confirmed'] = False
 
 # Show the login section only if the user is not logged in
 if not st.session_state['is_logged_in']:
@@ -105,14 +113,9 @@ if st.session_state['is_logged_in']:
     user_info = st.session_state['user_info']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
-    # Refresh the registration list from Google Sheets after each registration
-    def refresh_registration_list():
-        st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
-    
-    # Initial registration list display
-    refresh_registration_list()
+    # Display registered targets for the current user
     registration_df = st.session_state['registration_df']
-    user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
+    user_registrations = registration_df[registration_df['maNVYT'] == user_info['maNVYT']]
     
     st.write("Chỉ tiêu đã đăng ký:")
     if not user_registrations.empty:
@@ -163,7 +166,7 @@ if st.session_state['is_logged_in']:
             # Prepare new registration entries
             new_registrations = [
                 [
-                    int(user_info['maNVYT']),
+                    int(user_info['maNVYT']),  # Ensure maNVYT is a standard Python int
                     user_info['tenNhanVien'],
                     target,
                     timestamp
@@ -175,19 +178,8 @@ if st.session_state['is_logged_in']:
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
                 
-                # Update session state registration DataFrame and refresh display
-                refresh_registration_list()
+                # Update session state registration DataFrame
+                st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
                 st.success("Đăng ký thành công!")
-                
-                # Re-display updated registration list for the current user
-                registration_df = st.session_state['registration_df']
-                user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
-                
-                st.write("Chỉ tiêu đã đăng ký:")
-                if not user_registrations.empty:
-                    st.write(user_registrations[['Target', 'TimeStamp']])
-                else:
-                    st.write("Bạn chưa đăng ký chỉ tiêu nào!")
-                    
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
