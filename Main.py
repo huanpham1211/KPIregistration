@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime
-import io
 import json
 import pytz
 from google.oauth2 import service_account
@@ -9,13 +8,13 @@ from googleapiclient.discovery import build
 
 # Google Sheets document IDs and ranges
 KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # ID for KPITarget Google Sheet
-KPI_SHEET_RANGE = 'Sheet1'  # Replace with your sheet name
+KPI_SHEET_RANGE = 'Sheet1'
 
 REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'  # ID for Registration Google Sheet
-REGISTRATION_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
+REGISTRATION_SHEET_RANGE = 'Sheet1'
 
 NHANVIEN_SHEET_ID = '1kzfwjA0nVLFoW8T5jroLyR2lmtdZp8eaYH-_Pyb0nbk'  # ID for NhanVien Google Sheet
-NHANVIEN_SHEET_RANGE = 'Sheet1'  # Replace with the correct sheet name if different
+NHANVIEN_SHEET_RANGE = 'Sheet1'
 
 # Load Google credentials from Streamlit Secrets
 google_credentials = st.secrets["GOOGLE_CREDENTIALS"]
@@ -43,15 +42,13 @@ def fetch_sheet_data(sheet_id, range_name):
         st.error("No data found.")
         return pd.DataFrame()
     else:
-        headers = values[0]  # First row as headers
-        data = values[1:]  # Data starts from the second row
+        headers = values[0]
+        data = values[1:]
         return pd.DataFrame(data, columns=headers)
 
 # Function to append data to a Google Sheet
 def append_to_sheet(sheet_id, range_name, values):
-    body = {
-        'values': values
-    }
+    body = {'values': values}
     sheets_service.spreadsheets().values().append(
         spreadsheetId=sheet_id,
         range=range_name,
@@ -62,15 +59,12 @@ def append_to_sheet(sheet_id, range_name, values):
 
 # Load Google Sheets data into Streamlit session state
 if 'nhanvien_df' not in st.session_state:
-    # Load NhanVien data from Google Sheets
     st.session_state['nhanvien_df'] = fetch_sheet_data(NHANVIEN_SHEET_ID, NHANVIEN_SHEET_RANGE)
 
 if 'kpitarget_df' not in st.session_state:
-    # Load KPITarget data from Google Sheets
     st.session_state['kpitarget_df'] = fetch_sheet_data(KPI_SHEET_ID, KPI_SHEET_RANGE)
 
 if 'registration_df' not in st.session_state:
-    # Load registration data from Google Sheets
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
 
 # Helper function to check login
@@ -84,11 +78,7 @@ def check_login(username, password):
 if 'is_logged_in' not in st.session_state:
     st.session_state['is_logged_in'] = False
 
-# Initialize registration confirmation flag
-if 'registration_confirmed' not in st.session_state:
-    st.session_state['registration_confirmed'] = False
-
-# Show the login section only if the user is not logged in
+# Display the login section only if the user is not logged in
 if not st.session_state['is_logged_in']:
     st.title("Đăng nhập")
     username = st.text_input("Tài khoản")
@@ -97,7 +87,6 @@ if not st.session_state['is_logged_in']:
     if st.button("Login"):
         user = check_login(username, password)
         if user is not None:
-            # Set user details in session state and login status
             st.session_state['user_info'] = {
                 "maNVYT": user.iloc[0]["maNVYT"],
                 "tenNhanVien": user.iloc[0]["tenNhanVien"],
@@ -166,7 +155,7 @@ if st.session_state['is_logged_in']:
             # Prepare new registration entries
             new_registrations = [
                 [
-                    int(user_info['maNVYT']),  # Ensure maNVYT is a standard Python int
+                    int(user_info['maNVYT']),
                     user_info['tenNhanVien'],
                     target,
                     timestamp
