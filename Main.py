@@ -106,7 +106,11 @@ if st.session_state['is_logged_in']:
     st.write(f"Welcome, {user_info['tenNhanVien']}")
 
     # Refresh the registration list from Google Sheets after each registration
-    st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+    def refresh_registration_list():
+        st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+    
+    # Initial registration list display
+    refresh_registration_list()
     registration_df = st.session_state['registration_df']
     user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
     
@@ -170,20 +174,20 @@ if st.session_state['is_logged_in']:
             # Append to Google Sheets
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
-
-                 # Update session state registration DataFrame
-                st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+                
+                # Update session state registration DataFrame and refresh display
+                refresh_registration_list()
                 st.success("Đăng ký thành công!")
-    
-                # Refresh the displayed registered targets for the user
+                
+                # Re-display updated registration list for the current user
                 registration_df = st.session_state['registration_df']
                 user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
-    
+                
                 st.write("Chỉ tiêu đã đăng ký:")
                 if not user_registrations.empty:
                     st.write(user_registrations[['Target', 'TimeStamp']])
                 else:
                     st.write("Bạn chưa đăng ký chỉ tiêu nào!")
-                
+                    
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
