@@ -148,43 +148,43 @@ if st.session_state['is_logged_in']:
     selected_targets = [target.split(" (")[0] for target in targets_to_register]
 
     # Confirmation dialog before registration
-if selected_targets:
-confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn?", ("Không", "Có"))
-
-    if confirmation == "Có" and st.button("Xác nhận đăng ký"):
-        # Get Vietnam timezone-aware timestamp
-        vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-        timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
-
-        # Prepare new registration entries
-        new_registrations = [
-            [
-                int(user_info['maNVYT']),
-                user_info['tenNhanVien'],
-                target,
-                timestamp
-            ]
-            for target in selected_targets
-        ]
-
-        # Append to Google Sheets
-        try:
-            append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
-            
-            # Update session state registration DataFrame
-            st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
-            st.success("Đăng ký thành công!")
-
-            # Refresh the displayed registered targets for the user
-            registration_df = st.session_state['registration_df']
-            user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
-
-            st.write("Chỉ tiêu đã đăng ký:")
-            if not user_registrations.empty:
-                st.write(user_registrations[['Target', 'TimeStamp']])
-            else:
-                st.write("Bạn chưa đăng ký chỉ tiêu nào!")
-                
-        except Exception as e:
-            st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+        if selected_targets:
+        confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn?", ("Không", "Có"))
+        
+            if confirmation == "Có" and st.button("Xác nhận đăng ký"):
+                # Get Vietnam timezone-aware timestamp
+                vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
+                timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
+        
+                # Prepare new registration entries
+                new_registrations = [
+                    [
+                        int(user_info['maNVYT']),
+                        user_info['tenNhanVien'],
+                        target,
+                        timestamp
+                    ]
+                    for target in selected_targets
+                ]
+        
+                # Append to Google Sheets
+                try:
+                    append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
+                    
+                    # Update session state registration DataFrame
+                    st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
+                    st.success("Đăng ký thành công!")
+        
+                    # Refresh the displayed registered targets for the user
+                    registration_df = st.session_state['registration_df']
+                    user_registrations = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]
+        
+                    st.write("Chỉ tiêu đã đăng ký:")
+                    if not user_registrations.empty:
+                        st.write(user_registrations[['Target', 'TimeStamp']])
+                    else:
+                        st.write("Bạn chưa đăng ký chỉ tiêu nào!")
+                        
+                except Exception as e:
+                    st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
 
