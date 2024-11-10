@@ -180,3 +180,7 @@ if not st.session_state.get('is_logged_in', False):
             st.error("Sai tên tài khoản hoặc mật khẩu")
 else:
     display_main_content()
+
+# Footer at the sidebar with developer information
+st.sidebar.markdown("---")
+st.sidebar.markdown("<div style='text-align: center; font-size: small;'>Developed by HuanPham</div>", unsafe_allow_html=True)
