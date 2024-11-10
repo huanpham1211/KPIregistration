@@ -107,9 +107,12 @@ if not st.session_state['is_logged_in']:
             }
             st.session_state['is_logged_in'] = True
             st.success("Đăng nhập thành công")
-            st.experimental_rerun()  # Force rerun to reflect login status immediately
+            
+            # Trigger a rerun by setting a dummy query parameter
+            st.experimental_set_query_params(rerun="true")
     else:
         st.error("Sai tên tài khoản hoặc mật khẩu")
+
 
 # Only display the main content if the user is logged in
 if st.session_state.get('is_logged_in', False):
