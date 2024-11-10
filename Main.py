@@ -170,10 +170,10 @@ else:
         
         # Display content based on selected tab
         if page == "Registered Targets":
-            st.title("Registered Targets")
+            st.title("CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ")
             display_user_registrations()
         elif page == "Register New Targets":
-            st.title("Register New Targets")
+            st.title("ĐĂNG KÝ MỚI")
             display_registration_form()
 
 # Footer at the sidebar with developer information
