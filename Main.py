@@ -76,7 +76,6 @@ def check_login(username, password):
 
 # Function to display the user's registered targets
 def display_user_registrations():
-    # Refresh the registration list from Google Sheets after each registration
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
     registration_df = st.session_state['registration_df']
     user_registrations = registration_df[registration_df['maNVYT'] == str(st.session_state['user_info']['maNVYT'])]
@@ -88,16 +87,9 @@ def display_user_registrations():
     else:
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
-# Main content display function after successful login
-def display_main_content():
+# Function to display the registration form
+def display_registration_form():
     user_info = st.session_state['user_info']
-    st.write(f"Welcome, {user_info['tenNhanVien']}")
-    
-    # Display the user's registered targets
-    display_user_registrations()
-    
-    # Select and Register Target
-    st.title("Chọn chỉ tiêu và đăng ký")
     kpitarget_df = st.session_state['kpitarget_df']
     registration_df = st.session_state['registration_df']
 
@@ -133,7 +125,7 @@ def display_main_content():
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Get Vietnam timezone-aware timestamp
             vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-            timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")  # Correct timestamp format
+            timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
 
             # Prepare new registration entries
             new_registrations = [
@@ -149,13 +141,8 @@ def display_main_content():
             # Append to Google Sheets
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
-                
-                # Display success message
                 st.success("Đăng ký thành công!")
-                
-                # Refresh the displayed registered targets for the user
-                display_user_registrations()
-                
+                display_user_registrations()  # Refresh the registered targets view
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
 
@@ -175,11 +162,17 @@ if not st.session_state.get('is_logged_in', False):
             }
             st.session_state['is_logged_in'] = True
             st.success("Đăng nhập thành công")
-            display_main_content()  # Show main content immediately after login
-        else:
-            st.error("Sai tên tài khoản hoặc mật khẩu")
 else:
-    display_main_content()
+    # Sidebar navigation
+    page = st.sidebar.radio("Navigation", ["Registered Targets", "Register New Targets"])
+    
+    # Display content based on selected tab
+    if page == "Registered Targets":
+        st.title("Registered Targets")
+        display_user_registrations()
+    elif page == "Register New Targets":
+        st.title("Register New Targets")
+        display_registration_form()
 
 # Footer at the sidebar with developer information
 st.sidebar.markdown("---")
