@@ -107,9 +107,10 @@ if not st.session_state['is_logged_in']:
             }
             st.session_state['is_logged_in'] = True
             st.success("Đăng nhập thành công")
-
-    else:
-        st.error("Sai tên tài khoản hoặc mật khẩu")
+            # Trigger a rerun by setting a dummy query parameter
+            st.experimental_set_query_params(rerun="true")
+        else:
+            st.error("Sai tên tài khoản hoặc mật khẩu")
 
 
 # Only display the main content if the user is logged in
