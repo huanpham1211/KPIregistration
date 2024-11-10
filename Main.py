@@ -8,13 +8,13 @@ from googleapiclient.discovery import build
 import time
 
 # Google Sheets document IDs and ranges
-KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # ID for KPITarget Google Sheet
+KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'
 KPI_SHEET_RANGE = 'Sheet1'
 
-REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'  # ID for Registration Google Sheet
+REGISTRATION_SHEET_ID = '1Cq6J5gOqErerq4M4JqkwiE5aOC-bg1s6uqPB41_DzXs'
 REGISTRATION_SHEET_RANGE = 'Sheet1'
 
-NHANVIEN_SHEET_ID = '1kzfwjA0nVLFoW8T5jroLyR2lmtdZp8eaYH-_Pyb0nbk'  # ID for NhanVien Google Sheet
+NHANVIEN_SHEET_ID = '1kzfwjA0nVLFoW8T5jroLyR2lmtdZp8eaYH-_Pyb0nbk'
 NHANVIEN_SHEET_RANGE = 'Sheet1'
 
 # Load Google credentials from Streamlit Secrets
@@ -155,9 +155,9 @@ if not st.session_state.get('is_logged_in', False):
     
     login_button = st.button("Login")
     if login_button:
-        # Display temporary loading message
+        # Display loading message and check credentials
         with st.spinner("Logging in, please wait..."):
-            time.sleep(1)  # Simulated delay
+            time.sleep(1)  # Simulate loading time
             user = check_login(username, password)
             if user is not None:
                 st.session_state['user_info'] = {
@@ -166,12 +166,12 @@ if not st.session_state.get('is_logged_in', False):
                     "chucVu": user.iloc[0]["chucVu"]
                 }
                 st.session_state['is_logged_in'] = True
-                st.session_state['show_sidebar'] = True  # Flag to show sidebar after login
-                st.success("Đăng nhập thành công")
+                st.session_state['show_sidebar'] = True
+                st.sidebar.success("Đăng nhập thành công")  # Show successful login in sidebar
             else:
                 st.error("Sai tên tài khoản hoặc mật khẩu")
 else:
-    # Only display sidebar if logged in
+    # Display sidebar after login
     if st.session_state.get('show_sidebar', False):
         # Sidebar navigation
         page = st.sidebar.radio("", ["CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ", "ĐĂNG KÝ MỚI"])
