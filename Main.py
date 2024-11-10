@@ -87,40 +87,14 @@ def display_user_registrations():
     else:
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
-# Initialize user login status in session state
-if 'is_logged_in' not in st.session_state:
-    st.session_state['is_logged_in'] = False
-
-# Show the login section only if the user is not logged in
-if not st.session_state['is_logged_in']:
-    st.title("Đăng nhập")
-    username = st.text_input("Tài khoản")
-    password = st.text_input("Mật khẩu", type="password")
-    
-    if st.button("Login"):
-        user = check_login(username, password)
-        if user is not None:
-            st.session_state['user_info'] = {
-                "maNVYT": user.iloc[0]["maNVYT"],
-                "tenNhanVien": user.iloc[0]["tenNhanVien"],
-                "chucVu": user.iloc[0]["chucVu"]
-            }
-            st.session_state['is_logged_in'] = True
-            st.success("Đăng nhập thành công")
-            # Trigger a rerun by setting a dummy query parameter
-            st.experimental_set_query_params(rerun="true")
-        else:
-            st.error("Sai tên tài khoản hoặc mật khẩu")
-
-
-# Only display the main content if the user is logged in
-if st.session_state.get('is_logged_in', False):
+# Main content display function after successful login
+def display_main_content():
     user_info = st.session_state['user_info']
     st.write(f"Welcome, {user_info['tenNhanVien']}")
-
+    
     # Display the user's registered targets
     display_user_registrations()
-
+    
     # Select and Register Target
     st.title("Chọn chỉ tiêu và đăng ký")
     kpitarget_df = st.session_state['kpitarget_df']
@@ -183,3 +157,25 @@ if st.session_state.get('is_logged_in', False):
                 
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
+# Check for login and show the login section if the user is not logged in
+if not st.session_state.get('is_logged_in', False):
+    st.title("Đăng nhập")
+    username = st.text_input("Tài khoản")
+    password = st.text_input("Mật khẩu", type="password")
+    
+    if st.button("Login"):
+        user = check_login(username, password)
+        if user is not None:
+            st.session_state['user_info'] = {
+                "maNVYT": user.iloc[0]["maNVYT"],
+                "tenNhanVien": user.iloc[0]["tenNhanVien"],
+                "chucVu": user.iloc[0]["chucVu"]
+            }
+            st.session_state['is_logged_in'] = True
+            st.success("Đăng nhập thành công")
+            display_main_content()  # Show main content immediately after login
+        else:
+            st.error("Sai tên tài khoản hoặc mật khẩu")
+else:
+    display_main_content()
