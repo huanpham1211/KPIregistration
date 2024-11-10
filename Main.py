@@ -5,6 +5,7 @@ import json
 import pytz
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
+import time
 
 # Google Sheets document IDs and ranges
 KPI_SHEET_ID = '1f38fTxOkuP2PFKDSyrxp1aRXi8iz9rZqMJesDkJjC14'  # ID for KPITarget Google Sheet
@@ -152,16 +153,23 @@ if not st.session_state.get('is_logged_in', False):
     username = st.text_input("Tài khoản")
     password = st.text_input("Mật khẩu", type="password")
     
-    if st.button("Login"):
-        user = check_login(username, password)
-        if user is not None:
-            st.session_state['user_info'] = {
-                "maNVYT": user.iloc[0]["maNVYT"],
-                "tenNhanVien": user.iloc[0]["tenNhanVien"],
-                "chucVu": user.iloc[0]["chucVu"]
-            }
-            st.session_state['is_logged_in'] = True
-            st.session_state['show_sidebar'] = True  # Flag to show sidebar after login
+    login_button = st.button("Login")
+    if login_button:
+        # Display temporary loading message
+        with st.spinner("Logging in, please wait..."):
+            time.sleep(1)  # Simulated delay
+            user = check_login(username, password)
+            if user is not None:
+                st.session_state['user_info'] = {
+                    "maNVYT": user.iloc[0]["maNVYT"],
+                    "tenNhanVien": user.iloc[0]["tenNhanVien"],
+                    "chucVu": user.iloc[0]["chucVu"]
+                }
+                st.session_state['is_logged_in'] = True
+                st.session_state['show_sidebar'] = True  # Flag to show sidebar after login
+                st.success("Đăng nhập thành công")
+            else:
+                st.error("Sai tên tài khoản hoặc mật khẩu")
 else:
     # Only display sidebar if logged in
     if st.session_state.get('show_sidebar', False):
