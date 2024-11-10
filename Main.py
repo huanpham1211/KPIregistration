@@ -107,8 +107,9 @@ if not st.session_state['is_logged_in']:
             }
             st.session_state['is_logged_in'] = True
             st.success("Đăng nhập thành công")
-        else:
-            st.error("Sai tên tài khoản hoặc mật khẩu")
+            st.experimental_rerun()  # Force rerun to reflect login status immediately
+    else:
+        st.error("Sai tên tài khoản hoặc mật khẩu")
 
 # Only display the main content if the user is logged in
 if st.session_state.get('is_logged_in', False):
