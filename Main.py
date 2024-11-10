@@ -161,18 +161,20 @@ if not st.session_state.get('is_logged_in', False):
                 "chucVu": user.iloc[0]["chucVu"]
             }
             st.session_state['is_logged_in'] = True
-            st.success("Đăng nhập thành công")
+            st.session_state['show_sidebar'] = True  # Flag to show sidebar after login
 else:
-    # Sidebar navigation
-    page = st.sidebar.radio("Navigation", ["Registered Targets", "Register New Targets"])
-    
-    # Display content based on selected tab
-    if page == "Registered Targets":
-        st.title("Registered Targets")
-        display_user_registrations()
-    elif page == "Register New Targets":
-        st.title("Register New Targets")
-        display_registration_form()
+    # Only display sidebar if logged in
+    if st.session_state.get('show_sidebar', False):
+        # Sidebar navigation
+        page = st.sidebar.radio("Navigation", ["Registered Targets", "Register New Targets"])
+        
+        # Display content based on selected tab
+        if page == "Registered Targets":
+            st.title("Registered Targets")
+            display_user_registrations()
+        elif page == "Register New Targets":
+            st.title("Register New Targets")
+            display_registration_form()
 
 # Footer at the sidebar with developer information
 st.sidebar.markdown("---")
