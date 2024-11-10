@@ -83,7 +83,8 @@ def display_user_registrations():
 
     st.write("Chỉ tiêu đã đăng ký:")
     if not user_registrations.empty:
-        st.write(user_registrations[['Target', 'TimeStamp']])
+        user_registrations = user_registrations.rename(columns={'Target': 'Chỉ tiêu', 'TimeStamp': 'Thời gian đăng ký'})
+        st.write(user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']])
     else:
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
@@ -132,7 +133,7 @@ def display_main_content():
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Get Vietnam timezone-aware timestamp
             vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
-            timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
+            timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")  # Correct timestamp format
 
             # Prepare new registration entries
             new_registrations = [
