@@ -166,13 +166,13 @@ else:
     # Only display sidebar if logged in
     if st.session_state.get('show_sidebar', False):
         # Sidebar navigation
-        page = st.sidebar.radio("Navigation", ["Registered Targets", "Register New Targets"])
+        page = st.sidebar.radio("", ["CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ", "ĐĂNG KÝ MỚI"])
         
         # Display content based on selected tab
-        if page == "Registered Targets":
+        if page == "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ":
             st.title("CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ")
             display_user_registrations()
-        elif page == "Register New Targets":
+        elif page == "ĐĂNG KÝ MỚI":
             st.title("ĐĂNG KÝ MỚI")
             display_registration_form()
 
