@@ -121,7 +121,7 @@ def display_registration_form():
 
     # Confirmation dialog before registration
     if selected_targets:
-        confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn?", ("Không", "Có"))
+        confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn (Lưu ý không thể hủy chỉ tiêu đã đăng ký)?", ("Không", "Có"))
         
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Get Vietnam timezone-aware timestamp
