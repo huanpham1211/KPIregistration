@@ -145,9 +145,11 @@ def display_registration_form():
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
                 st.success("Đăng ký thành công!")
-                display_user_registrations()  # Refresh the registered targets view
+                st.session_state['show_sidebar'] = True
+                st.experimental_rerun()  # Redirect to the sidebar for CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
 
 
 # Check for login and show the login section if the user is not logged in
