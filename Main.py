@@ -103,26 +103,28 @@ def display_registration_form():
         remaining_slots = max_reg - registered_count
         target_slots[target] = remaining_slots
 
-    # Show remaining slots and allow multiple selection, but disable registered targets
+    # Determine already registered targets by the user
     registered_targets = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]['Target'].tolist()
-    available_targets = [
-        f"{target} ({remaining_slots} vị trí trống còn lại)" 
-        for target, remaining_slots in target_slots.items() 
-        if remaining_slots > 0 and target not in registered_targets
-    ]
-    
-    targets_to_register = st.multiselect(
-        "Chọn chỉ tiêu (Số vị trí còn lại):",
-        available_targets
-    )
 
-    # Extract the selected targets' names (without remaining slots info)
-    selected_targets = [target.split(" (")[0] for target in targets_to_register]
+    # Display available targets with remaining slots as wide checkboxes
+    st.write("### Chọn chỉ tiêu (Số vị trí còn lại):")
+    selected_targets = []
+    for target, remaining_slots in target_slots.items():
+        if remaining_slots > 0 and target not in registered_targets:
+            label = f"{target} ({remaining_slots} vị trí trống còn lại)"
+            is_selected = st.checkbox(label, key=f"target_{target}")
+            if is_selected:
+                selected_targets.append(target)
+
+    # Enforce a maximum of 2 registrations
+    if len(registered_targets) + len(selected_targets) > 2:
+        st.error("Bạn chỉ có thể đăng ký tối đa 2 chỉ tiêu.")
+        return
 
     # Confirmation dialog before registration
     if selected_targets:
         confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn (Lưu ý không thể hủy chỉ tiêu đã đăng ký)?", ("Không", "Có"))
-        
+
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Get Vietnam timezone-aware timestamp
             vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
@@ -146,6 +148,7 @@ def display_registration_form():
                 display_user_registrations()  # Refresh the registered targets view
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
 
 # Check for login and show the login section if the user is not logged in
 if not st.session_state.get('is_logged_in', False):
