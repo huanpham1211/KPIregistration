@@ -145,8 +145,7 @@ def display_registration_form():
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
                 st.success("Đăng ký thành công!")
-                st.session_state['show_sidebar'] = True
-                st.experimental_rerun()  # Redirect to the sidebar for CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ
+                st.session_state['page'] = "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ"
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
 
