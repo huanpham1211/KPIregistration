@@ -81,10 +81,13 @@ def display_user_registrations():
     registration_df = st.session_state['registration_df']
     user_registrations = registration_df[registration_df['maNVYT'] == str(st.session_state['user_info']['maNVYT'])]
 
-    st.write("Chỉ tiêu đã đăng ký:")
+    st.write("### Chỉ tiêu đã đăng ký:")
     if not user_registrations.empty:
         user_registrations = user_registrations.rename(columns={'Target': 'Chỉ tiêu', 'TimeStamp': 'Thời gian đăng ký'})
-        st.write(user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']])
+        st.dataframe(user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']].style.set_table_styles([
+            {'selector': 'th', 'props': [('font-size', '14px'), ('text-align', 'center')]},
+            {'selector': 'td', 'props': [('font-size', '14px'), ('text-align', 'left')]}
+        ]), width=800)
     else:
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
