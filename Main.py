@@ -92,16 +92,31 @@ def display_user_registrations():
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
 # Function to display the registration form
+import streamlit as st
+import pytz
+from datetime import datetime
+
 def display_registration_form():
     user_info = st.session_state['user_info']
     kpitarget_df = st.session_state['kpitarget_df']
     registration_df = st.session_state['registration_df']
 
+    # Normalize column names (strip spaces)
+    kpitarget_df.columns = kpitarget_df.columns.str.strip()
+
+    # Ensure MucDo column exists
+    if 'MucDo' not in kpitarget_df.columns:
+        st.error("Cột 'MucDo' không tồn tại trong dữ liệu KPI Target!")
+        return
+
+    # Define sorted order for MucDo
+    muc_do_order = ["Thường quy", "Trung bình", "Khó", "Rất khó"]
+
     # Calculate remaining registration slots for each target
     target_slots = {}
     for _, row in kpitarget_df.iterrows():
         target = row['Target']
-        muc_do = row['MucDo']  # Grouping category
+        muc_do = row['MucDo']
         max_reg = int(row['MaxReg'])
         registered_count = registration_df[registration_df['Target'] == target].shape[0]
         remaining_slots = max_reg - registered_count
@@ -113,19 +128,20 @@ def display_registration_form():
     # Determine already registered targets by the user
     registered_targets = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]['Target'].tolist()
 
-    # Display available targets grouped by MucDo
+    # Display available targets grouped by sorted MucDo
     st.write("### Chọn chỉ tiêu (Số vị trí còn lại):")
     selected_targets = []
 
-    for muc_do, targets in target_slots.items():
-        st.subheader(f"Mức độ: {muc_do}")  # Group header
+    for muc_do in muc_do_order:
+        if muc_do in target_slots:  # Only display existing categories
+            st.subheader(f"Mức độ: {muc_do}")
 
-        for target, remaining_slots in targets.items():
-            if remaining_slots > 0 and target not in registered_targets:
-                label = f"{target} ({remaining_slots} vị trí trống còn lại)"
-                is_selected = st.checkbox(label, key=f"target_{target}")
-                if is_selected:
-                    selected_targets.append(target)
+            for target, remaining_slots in target_slots[muc_do].items():
+                if remaining_slots > 0 and target not in registered_targets:
+                    label = f"{target} ({remaining_slots} vị trí trống còn lại)"
+                    is_selected = st.checkbox(label, key=f"target_{target}")
+                    if is_selected:
+                        selected_targets.append(target)
 
     # Enforce a maximum of 2 registrations
     if len(registered_targets) + len(selected_targets) > 2:
