@@ -94,6 +94,10 @@ def display_user_registrations():
 # Function to display the registration form
 
 
+import streamlit as st
+import pytz
+from datetime import datetime
+
 def display_registration_form():
     user_info = st.session_state['user_info']
     kpitarget_df = st.session_state['kpitarget_df']
@@ -111,9 +115,20 @@ def display_registration_form():
         st.error(f"Các cột bị thiếu trong KPI Target: {', '.join(missing_columns)}")
         return
 
-    if 'nhom' not in user_info or 'BoPhan' not in user_info:
-        st.error("Thiếu thông tin nhóm hoặc bộ phận của người dùng.")
+    # Ensure nhanvien_df contains 'nhom' and 'BoPhan'
+    if 'nhom' not in nhanvien_df.columns or 'BoPhan' not in nhanvien_df.columns:
+        st.error("Thiếu cột 'nhom' hoặc 'BoPhan' trong danh sách nhân viên.")
         return
+
+    # Get user's nhom and BoPhan from nhanvien_df
+    user_record = nhanvien_df[nhanvien_df['maNVYT'] == user_info['maNVYT']]
+    
+    if user_record.empty:
+        st.error("Không tìm thấy thông tin nhân viên.")
+        return
+
+    user_nhom = user_record['nhom'].values[0]
+    user_bophan = user_record['BoPhan'].values[0]
 
     # Define sorted order for MucDo
     muc_do_order = ["Thường quy", "Trung bình", "Khó", "Rất khó"]
@@ -126,9 +141,6 @@ def display_registration_form():
         "NQL": ["NQL", "NV"],  # Can select NQL, NV
         "NV": ["NV"],  # Can only select NV
     }
-
-    user_nhom = user_info['nhom']
-    user_bophan = user_info['BoPhan']
 
     # Get valid positions based on nhom
     allowed_positions = nhom_permissions.get(user_nhom, [])
@@ -224,6 +236,7 @@ def display_registration_form():
                 st.session_state['page'] = "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ"
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
 
 
 
