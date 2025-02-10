@@ -190,13 +190,15 @@ def display_registration_form():
     for muc_do in muc_do_order:
         if muc_do in target_slots:  # Only display existing categories
             st.subheader(f"Mức độ: {muc_do}")
-
+    
             for target, remaining_slots in target_slots[muc_do].items():
                 if remaining_slots > 0 and target not in registered_targets:
-                    # Use Markdown with HTML for styling
-                    label = f"{target} <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>"
-                    is_selected = st.checkbox(label, key=f"target_{target}", help="Click để đăng ký")
+                    # Use st.markdown() to format text with color before the checkbox
+                    st.markdown(f"**{target}** <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
                     
+                    # Checkbox without the HTML formatting issue
+                    is_selected = st.checkbox(f"Chọn {target}", key=f"target_{target}", help="Click để đăng ký")
+    
                     if is_selected:
                         selected_targets.append(target)
 
