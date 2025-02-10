@@ -76,20 +76,32 @@ def check_login(username, password):
     return user if not user.empty else None
 
 # Function to display the user's registered targets
+import streamlit as st
+
 def display_user_registrations():
+    # Fetch the latest registration data
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
     registration_df = st.session_state['registration_df']
+
+    # Filter user's registrations based on maNVYT
     user_registrations = registration_df[registration_df['maNVYT'] == str(st.session_state['user_info']['maNVYT'])]
 
     st.write("### Chỉ tiêu đã đăng ký:")
+
     if not user_registrations.empty:
+        # Rename columns for better readability
         user_registrations = user_registrations.rename(columns={'Target': 'Chỉ tiêu', 'TimeStamp': 'Thời gian đăng ký'})
-        st.dataframe(user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']].style.set_table_styles([
-            {'selector': 'th', 'props': [('font-size', '14px'), ('text-align', 'center')]},
-            {'selector': 'td', 'props': [('font-size', '14px'), ('text-align', 'left')]}
-        ]), width=800)
+
+        # Display user registrations in a table format
+        st.dataframe(
+            user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']],
+            width=800,
+            hide_index=True  # Hides the default index column
+        )
     else:
-        st.write("Bạn chưa đăng ký chỉ tiêu nào!")
+        st.info("Bạn chưa đăng ký chỉ tiêu nào!")
+
+
 
 # Function to display the registration form
 def display_registration_form():
