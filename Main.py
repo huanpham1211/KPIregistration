@@ -227,23 +227,26 @@ def display_registration_form():
     # Confirmation dialog before registration
     if selected_targets:
         confirmation = st.radio("Bạn có muốn đăng ký chỉ tiêu đã chọn (Lưu ý không thể hủy chỉ tiêu đã đăng ký)?", ("Không", "Có"))
-
+    
         if confirmation == "Có" and st.button("Xác nhận đăng ký"):
             # Get Vietnam timezone-aware timestamp
             vietnam_tz = pytz.timezone("Asia/Ho_Chi_Minh")
             timestamp = datetime.now(vietnam_tz).strftime("%Y-%m-%d %H:%M:%S")
-
+    
+            # Convert maNVYT to a string to preserve leading zeros
+            maNVYT_str = str(user_info['maNVYT'])
+    
             # Prepare new registration entries
             new_registrations = [
                 [
-                    int(user_info['maNVYT']),
+                    f"'{maNVYT_str}",  # Ensures Google Sheets treats it as text
                     user_info['tenNhanVien'],
                     target,
                     timestamp
                 ]
                 for target in selected_targets
             ]
-
+    
             # Append to Google Sheets
             try:
                 append_to_sheet(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE, new_registrations)
@@ -251,6 +254,7 @@ def display_registration_form():
                 st.session_state['page'] = "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ"
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
 
 
 
