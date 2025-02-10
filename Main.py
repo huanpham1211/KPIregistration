@@ -101,23 +101,31 @@ def display_registration_form():
     target_slots = {}
     for _, row in kpitarget_df.iterrows():
         target = row['Target']
+        muc_do = row['MucDo']  # Grouping category
         max_reg = int(row['MaxReg'])
         registered_count = registration_df[registration_df['Target'] == target].shape[0]
         remaining_slots = max_reg - registered_count
-        target_slots[target] = remaining_slots
+
+        if muc_do not in target_slots:
+            target_slots[muc_do] = {}
+        target_slots[muc_do][target] = remaining_slots
 
     # Determine already registered targets by the user
     registered_targets = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]['Target'].tolist()
 
-    # Display available targets with remaining slots as wide checkboxes
+    # Display available targets grouped by MucDo
     st.write("### Chọn chỉ tiêu (Số vị trí còn lại):")
     selected_targets = []
-    for target, remaining_slots in target_slots.items():
-        if remaining_slots > 0 and target not in registered_targets:
-            label = f"{target} ({remaining_slots} vị trí trống còn lại)"
-            is_selected = st.checkbox(label, key=f"target_{target}")
-            if is_selected:
-                selected_targets.append(target)
+
+    for muc_do, targets in target_slots.items():
+        st.subheader(f"Mức độ: {muc_do}")  # Group header
+
+        for target, remaining_slots in targets.items():
+            if remaining_slots > 0 and target not in registered_targets:
+                label = f"{target} ({remaining_slots} vị trí trống còn lại)"
+                is_selected = st.checkbox(label, key=f"target_{target}")
+                if is_selected:
+                    selected_targets.append(target)
 
     # Enforce a maximum of 2 registrations
     if len(registered_targets) + len(selected_targets) > 2:
