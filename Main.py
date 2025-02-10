@@ -92,12 +92,6 @@ def display_user_registrations():
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
 # Function to display the registration form
-
-
-import streamlit as st
-import pytz
-from datetime import datetime
-
 def display_registration_form():
     user_info = st.session_state['user_info']
     kpitarget_df = st.session_state['kpitarget_df']
@@ -199,10 +193,13 @@ def display_registration_form():
 
             for target, remaining_slots in target_slots[muc_do].items():
                 if remaining_slots > 0 and target not in registered_targets:
-                    label = f"{target} ({remaining_slots} vị trí trống còn lại)"
-                    is_selected = st.checkbox(label, key=f"target_{target}")
+                    # Use Markdown with HTML for styling
+                    label = f"{target} <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>"
+                    is_selected = st.checkbox(label, key=f"target_{target}", help="Click để đăng ký")
+                    
                     if is_selected:
                         selected_targets.append(target)
+
 
     # Enforce a maximum of 2 registrations
     if len(registered_targets) + len(selected_targets) > 2:
