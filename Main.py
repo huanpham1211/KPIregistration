@@ -197,7 +197,7 @@ def display_registration_form():
                     st.markdown(f"**{target}** <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
                     
                     # Checkbox without the HTML formatting issue
-                    is_selected = st.checkbox(f"Chọn {target}", key=f"target_{target}", help="Click để đăng ký")
+                    is_selected = st.checkbox(f"Chọn", key=f"target_{target}", help="Click để đăng ký")
     
                     if is_selected:
                         selected_targets.append(target)
