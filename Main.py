@@ -92,38 +92,87 @@ def display_user_registrations():
         st.write("Bạn chưa đăng ký chỉ tiêu nào!")
 
 # Function to display the registration form
-import streamlit as st
-import pytz
-from datetime import datetime
+
 
 def display_registration_form():
     user_info = st.session_state['user_info']
     kpitarget_df = st.session_state['kpitarget_df']
     registration_df = st.session_state['registration_df']
+    nhanvien_df = st.session_state['nhanvien_df']
 
     # Normalize column names (strip spaces)
     kpitarget_df.columns = kpitarget_df.columns.str.strip()
+    nhanvien_df.columns = nhanvien_df.columns.str.strip()
 
-    # Ensure MucDo column exists
-    if 'MucDo' not in kpitarget_df.columns:
-        st.error("Cột 'MucDo' không tồn tại trong dữ liệu KPI Target!")
+    # Ensure necessary columns exist
+    required_columns = {'MucDo', 'ViTriViecLam', 'BoPhan', 'Target', 'MaxReg'}
+    missing_columns = required_columns - set(kpitarget_df.columns)
+    if missing_columns:
+        st.error(f"Các cột bị thiếu trong KPI Target: {', '.join(missing_columns)}")
+        return
+
+    if 'nhom' not in user_info or 'BoPhan' not in user_info:
+        st.error("Thiếu thông tin nhóm hoặc bộ phận của người dùng.")
         return
 
     # Define sorted order for MucDo
     muc_do_order = ["Thường quy", "Trung bình", "Khó", "Rất khó"]
 
+    # Define selection permissions based on nhom
+    nhom_permissions = {
+        "BCN": ["BCN", "QLKT", "QLCL", "NQL", "NV"],  # Can select all
+        "QLKT": ["QLKT", "NQL", "NV"],  # Can select QLKT, NQL, NV
+        "QLCL": ["QLCL", "NQL", "NV"],  # Can select QLCL, NQL, NV
+        "NQL": ["NQL", "NV"],  # Can select NQL, NV
+        "NV": ["NV"],  # Can only select NV
+    }
+
+    user_nhom = user_info['nhom']
+    user_bophan = user_info['BoPhan']
+
+    # Get valid positions based on nhom
+    allowed_positions = nhom_permissions.get(user_nhom, [])
+
     # Calculate remaining registration slots for each target
     target_slots = {}
+
     for _, row in kpitarget_df.iterrows():
         target = row['Target']
         muc_do = row['MucDo']
+        vi_tri = row['ViTriViecLam']
+        bo_phan_target = row['BoPhan']  # This may contain multiple values like "SH,TSSS,HIV"
         max_reg = int(row['MaxReg'])
         registered_count = registration_df[registration_df['Target'] == target].shape[0]
         remaining_slots = max_reg - registered_count
 
-        if muc_do not in target_slots:
-            target_slots[muc_do] = {}
-        target_slots[muc_do][target] = remaining_slots
+        # Check if the user is eligible for the target
+        can_select = False
+
+        if user_bophan == "All":
+            can_select = True  # "All" users can select any target
+        else:
+            # Handle multiple values in BoPhan
+            target_departments = [bp.strip() for bp in str(bo_phan_target).split(",")]
+
+            # 1️⃣ If ViTriViecLam is set but BoPhan is empty → Compare only ViTriViecLam
+            if vi_tri and not bo_phan_target:
+                if vi_tri in allowed_positions:
+                    can_select = True
+
+            # 2️⃣ If BoPhan is set but ViTriViecLam is empty → Compare only BoPhan
+            elif bo_phan_target and not vi_tri:
+                if user_bophan in target_departments:
+                    can_select = True
+
+            # 3️⃣ If both are set → Both must match
+            elif vi_tri and bo_phan_target:
+                if vi_tri in allowed_positions and user_bophan in target_departments:
+                    can_select = True
+
+        if can_select:
+            if muc_do not in target_slots:
+                target_slots[muc_do] = {}
+            target_slots[muc_do][target] = remaining_slots
 
     # Determine already registered targets by the user
     registered_targets = registration_df[registration_df['maNVYT'] == str(user_info['maNVYT'])]['Target'].tolist()
@@ -175,6 +224,7 @@ def display_registration_form():
                 st.session_state['page'] = "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ"
             except Exception as e:
                 st.error(f"Lỗi khi ghi dữ liệu vào Google Sheets: {e}")
+
 
 
 
