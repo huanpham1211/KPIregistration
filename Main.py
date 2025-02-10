@@ -193,14 +193,18 @@ def display_registration_form():
     
             for target, remaining_slots in target_slots[muc_do].items():
                 if remaining_slots > 0 and target not in registered_targets:
-                    # Use st.markdown() to format text with color before the checkbox
-                    st.markdown(f"**{target}** <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
-                    
-                    # Checkbox without the HTML formatting issue
-                    is_selected = st.checkbox(f"Chọn", key=f"target_{target}", help="Click để đăng ký")
+                    # Create two columns: One for text, one for checkbox
+                    col1, col2 = st.columns([0.8, 0.2])  # Adjust ratio as needed
+    
+                    with col1:
+                        st.markdown(f"**{target}** <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
+    
+                    with col2:
+                        is_selected = st.checkbox("", key=f"target_{target}")  # Empty label for checkbox
     
                     if is_selected:
                         selected_targets.append(target)
+
 
 
     # Enforce a maximum of 2 registrations
