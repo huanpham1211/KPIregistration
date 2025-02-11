@@ -277,8 +277,8 @@ def display_registration_form():
 
 # Check for login and show the login section if the user is not logged in
 if not st.session_state.get('is_logged_in', False):
-    st.title("Đăng nhập")
-    username = st.text_input("Tài khoản")
+    st.title("Đăng ký KPI - Khoa Xét nghiệm")
+    username = st.text_input("Tài khoản", , placeholder="e.g., 01234.bvhv")
     password = st.text_input("Mật khẩu", type="password")
     
     login_button = st.button("Login")
@@ -303,7 +303,12 @@ else:
     if st.session_state.get('show_sidebar', False):
         # Sidebar navigation
         page = st.sidebar.radio("", ["CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ", "ĐĂNG KÝ MỚI"])
-        
+        # Logout button
+        if st.sidebar.button("Đăng xuất"):
+            for key in list(st.session_state.keys()):
+                del st.session_state[key]  # Clear all session state keys
+            st.sidebar.write("Bạn đã đăng xuất. Làm mới trang để đăng nhập lại.")
+            st.stop()  # Stop the app to ensure the session is cleared
         # Display content based on selected tab
         if page == "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ":
             st.title("CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ")
