@@ -95,7 +95,7 @@ def display_user_registrations():
         # Display user registrations in a table format
         st.dataframe(
             user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']],
-            width=800,
+            width=1600,
             hide_index=True  # Hides the default index column
         )
     else:
