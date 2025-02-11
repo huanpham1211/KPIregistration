@@ -76,15 +76,17 @@ def check_login(username, password):
     return user if not user.empty else None
 
 # Function to display the user's registered targets
-import streamlit as st
-
 def display_user_registrations():
     # Fetch the latest registration data
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
     registration_df = st.session_state['registration_df']
 
+    # Convert maNVYT to string format for consistency
+    registration_df['maNVYT'] = registration_df['maNVYT'].astype(str)
+    user_nvyt = str(st.session_state['user_info']['maNVYT'])
+
     # Filter user's registrations based on maNVYT
-    user_registrations = registration_df[registration_df['maNVYT'] == str(st.session_state['user_info']['maNVYT'])]
+    user_registrations = registration_df[registration_df['maNVYT'] == user_nvyt]
 
     st.write("### Chỉ tiêu đã đăng ký:")
 
@@ -92,14 +94,19 @@ def display_user_registrations():
         # Rename columns for better readability
         user_registrations = user_registrations.rename(columns={'Target': 'Chỉ tiêu', 'TimeStamp': 'Thời gian đăng ký'})
 
-        # Display user registrations in a table format
-        st.dataframe(
+        # Display user registrations in a table format with wider width and wrapped text
+        st.data_editor(
             user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']],
-            width=1600,
+            column_config={
+                "Chỉ tiêu": st.column_config.TextColumn(width="auto", help="Tên chỉ tiêu", max_chars=None, wrap_text=True),
+                "Thời gian đăng ký": st.column_config.TextColumn(width="auto", help="Thời gian đăng ký", wrap_text=True),
+            },
+            use_container_width=True,  # Makes the table as wide as the screen
             hide_index=True  # Hides the default index column
         )
     else:
         st.info("Bạn chưa đăng ký chỉ tiêu nào!")
+
 
 
 
