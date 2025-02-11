@@ -76,6 +76,8 @@ def check_login(username, password):
     return user if not user.empty else None
 
 # Function to display the user's registered targets
+import streamlit as st
+
 def display_user_registrations():
     # Fetch the latest registration data
     st.session_state['registration_df'] = fetch_sheet_data(REGISTRATION_SHEET_ID, REGISTRATION_SHEET_RANGE)
@@ -94,18 +96,24 @@ def display_user_registrations():
         # Rename columns for better readability
         user_registrations = user_registrations.rename(columns={'Target': 'Chỉ tiêu', 'TimeStamp': 'Thời gian đăng ký'})
 
-        # Display user registrations in a table format with wider width and wrapped text
-        st.data_editor(
+        # Apply CSS for wrapping text in the table
+        st.markdown("""
+            <style>
+                .stDataFrame { width: 100% !important; } /* Makes table wider */
+                .dataframe th { text-align: center !important; font-size: 16px !important; }
+                .dataframe td { word-wrap: break-word !important; white-space: normal !important; font-size: 14px !important; }
+            </style>
+        """, unsafe_allow_html=True)
+
+        # Display the dataframe
+        st.dataframe(
             user_registrations[['Chỉ tiêu', 'Thời gian đăng ký']],
-            column_config={
-                "Chỉ tiêu": st.column_config.TextColumn(width="auto", help="Tên chỉ tiêu", max_chars=None, wrap_text=True),
-                "Thời gian đăng ký": st.column_config.TextColumn(width="auto", help="Thời gian đăng ký", wrap_text=True),
-            },
-            use_container_width=True,  # Makes the table as wide as the screen
+            width=1200,  # Adjusted for wider table
             hide_index=True  # Hides the default index column
         )
     else:
         st.info("Bạn chưa đăng ký chỉ tiêu nào!")
+
 
 
 
