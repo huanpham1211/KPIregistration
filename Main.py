@@ -278,7 +278,7 @@ def display_registration_form():
 # Check for login and show the login section if the user is not logged in
 if not st.session_state.get('is_logged_in', False):
     st.title("Đăng ký KPI - Khoa Xét nghiệm")
-    username = st.text_input("Tài khoản", , placeholder="e.g., 01234.bvhv")
+    username = st.text_input("Tài khoản", placeholder="e.g., 01234.bvhv")
     password = st.text_input("Mật khẩu", type="password")
     
     login_button = st.button("Login")
