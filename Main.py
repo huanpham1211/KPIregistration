@@ -29,7 +29,7 @@ credentials = service_account.Credentials.from_service_account_info(
 
 # Initialize the Google Sheets API client
 sheets_service = build('sheets', 'v4', credentials=credentials)
-
+st.set_page_config(layout="wide")
 # Function to fetch data from a Google Sheet
 def fetch_sheet_data(sheet_id, range_name):
     result = sheets_service.spreadsheets().values().get(
