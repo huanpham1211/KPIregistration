@@ -316,9 +316,11 @@ else:
         if page == "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ":
             st.title("CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ")
             display_user_registrations()
+            st.rerun()
         elif page == "ĐĂNG KÝ MỚI":
             st.title("ĐĂNG KÝ MỚI")
             display_registration_form()
+            st.rerun()
 
 # Footer at the sidebar with developer information
 st.sidebar.markdown("---")
