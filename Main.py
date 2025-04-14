@@ -311,6 +311,7 @@ else:
                 del st.session_state[key]  # Clear all session state keys
             st.sidebar.write("Bạn đã đăng xuất. Làm mới trang để đăng nhập lại.")
             st.stop()  # Stop the app to ensure the session is cleared
+            st.rerun()
         # Display content based on selected tab
         if page == "CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ":
             st.title("CHỈ TIÊU KPI ĐÃ ĐĂNG KÝ")
