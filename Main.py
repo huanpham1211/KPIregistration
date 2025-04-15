@@ -224,7 +224,7 @@ def display_registration_form():
                     col1, col2 = st.columns([0.8, 0.2])  # Adjust ratio as needed
     
                     with col1:
-                        st.markdown(f"**{target}** <span style='color: orange;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
+                        st.markdown(f"**{target}** <span style='color: red;'>({remaining_slots} vị trí trống còn lại)</span>", unsafe_allow_html=True)
     
                     with col2:
                         is_selected = st.checkbox("", key=f"target_{target}")  # Empty label for checkbox
